@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN1"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 无论UserMapper.xml放在哪，mapper中d的namespace：一定要和mapper接口的全限定名一样
+，mapper接口中的方法名一定要与 UserMapper.xml的id一样-->
+<mapper namespace="com.smbms.dao.role.RoleMapper">
+    <!--使用Redis缓存作为MyBatis二级缓存-->
+    <cache type="com.smbms.tools.RedisCache"/>
+    <select id="getRoleList" resultType="role">
+        select * from smbms_role where 1=1
+    </select>
+    <!--通过rokeid来查询role相关信息-->
+    <select id="getRoleById" parameterType="int" resultType="role">
+        select * from smbms_role where id=#{roleId}
+    </select>
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd   
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd   
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd 
+            http://www.springframework.org/schema/context 
+            http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.smbms.service"/>
+    <context:component-scan base-package="com.smbms.dao"/>
+
+    <!-- 读取数据库配置文件 -->
+    <context:property-placeholder location="classpath:database.properties" ignore-unresolvable="true"/>
+
+    <!-- JNDI获取数据源(使用dbcp连接池) -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" scope="singleton">
+        <property name="driverClassName" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${user}"/>
+        <property name="password" value="${password}"/>
+        <!--数据库连接池在初始化连接时，第一次创建的连接个数，默认是0  -->
+        <property name="initialSize" value="${initialSize}"/>
+        <!-- 定义连接池能同时连接最大的连接个数，默认是8 -->
+        <property name="maxActive" value="${maxActive}"/>
+        <!-- 定义连接池中可以允许最大的空闲的连接数，默认8 ，不能设置太小-->
+        <property name="maxIdle" value="${maxIdle}"/>
+        <!--  定义连接池中可以允许最小的空闲的连接数，默认0，越接近maxidle-->
+        <property name="minIdle" value="${minIdle}"/>
+        <!-- 定义 最大连接等待时间，单位是ms，默认无限等待-->
+        <property name="maxWait" value="${maxWait}"/>
+        <!--在多长时间后，开启无用连接的回收机制,  -->
+        <property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}"/>
+        <!--告诉连接池是否开启无用连接的回收机制，默认false  -->
+        <property name="removeAbandoned" value="${removeAbandoned}"/>
+        <!-- sql 心跳包 -->
+        <!-- 定义开启evict的定时校验 -->
+        <property name="testWhileIdle" value="true"/>
+        <!-- 定义对拿到 testOnBorrow时是否要校验-->
+        <property name="testOnBorrow" value="false"/>
+        <!-- 定义testOnReturn返回连接时是否要校验 -->
+        <property name="testOnReturn" value="false"/>
+        <!-- 定义校验所要使用的的sql语句-->
+        <property name="validationQuery" value="select 1"/>
+        <!-- 定义evict事件间隔 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 定义每次校验的连接数，与maxActive一样 -->
+        <property name="numTestsPerEvictionRun" value="${maxActive}"/>
+    </bean>
+
+    <!-- 配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 配置mybatis SqlSessionFactoryBean-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" scope="singleton">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+
+    </bean>
+
+    <!-- AOP 事务处理 开始 -->
+    <aop:aspectj-autoproxy/>
+    <aop:config proxy-target-class="true">
+        <aop:pointcut expression="execution(* *com.smbms.service..*(..))" id="transService"/>
+        <aop:advisor pointcut-ref="transService" advice-ref="txAdvice"/>
+    </aop:config>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="smbms*" propagation="REQUIRED" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+    <!-- AOP 事务处理 结束 -->
+    <!--注入映射：所有的dao-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.smbms.dao"/>
+    </bean>
+
+</beans>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+    <!-- 密码验证器 -->
+    <bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <!--加密算法-->
+        <property name="hashAlgorithmName" value="MD5"/>
+        <property name="hashIterations" value="20"/>
+    </bean>
+    <!-- 2.realm组件: 关于授权,认证. -->
+    <bean id="userRealm" class="com.smbms.security.MyShiroReam">
+        <property name="credentialsMatcher" ref="credentialsMatcher"/>
+    </bean>
+
+
+    <!-- 1.安全管理器   DefaultWebSecurityManager : shiro管理器. 负责加载和协调其他组件. 注入: realm , 缓存管理器. -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!--单个realm使用realm,如果有多个realm，使用realms属性代替 -->
+        <property name="realm" ref="userRealm"/>
+    </bean>
+
+
+    <!-- 3.提供shiroFilter过滤器工厂: 将产生过滤器.需要在web.xml中指定过滤器实现拦截过滤. 提供配置: 认证规则. 提供配置:
+        权限访问规则. -->
+    <!--这里的shiroFilter必须与web.xml中的shiroFilter过滤器名字一致-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!--属性必需-->
+        <property name="securityManager" ref="securityManager"/>
+
+        <!-- 没有权限或者失败后跳转的页面 -->
+        <!--没有登录的用户请求需要登录的页面时自动跳转到登录页面，不是必须的属性，不输入地址的话会自动寻找项目web项目的根目录下的”/login.jsp”页面。-->
+        <property name="loginUrl" value="/login.jsp"/>
+        <!--登录成功默认跳转页面，不配置则跳转至”/”。如果登陆前点击的一个需要登录的页面，则在登录自动跳转到那个需要登录的页面。不跳转到此。-->
+        <property name="successUrl" value="/sys/main.html"/>
+        <!--没有权限默认跳转的页面-->
+        <property name="unauthorizedUrl" value="/unauth.jsp"/>
+        <!--过滤的详细信息-->
+        <property name="filterChainDefinitions">
+            <value>
+                <!--对静态资源的无拦截-->
+                /statics/**=anon
+                /login.html=anon
+                /dologin.html=anon
+                <!-- /**=anon等待配置过滤器进行访问拦截. anon表示可以不用等了直接访问, authc表示必须登录. /**=anon /info/**=authc
+                    注: 当过滤器过滤请求时, 将所有的项目根目录下的uri地址,用作匹配以下规则: -->
+                <!--/**=anon-->
+                <!--
+                anon:例子/admins/**=anon没有参数，表示可以匿名使用
+                authc:例如/admins/user/**=authc表示需要认证(登录)才能使用，没有参数
+                roles(角色)：例子/admins/user/**=roles[admin],参数可以写多个，
+                多个时必须加上引号，并且参数之间用逗号分割，当有多个参数时，
+                例如admins/user/**=roles["admin,guest"],
+                每个参数通过才算通过，相当于hasAllRoles()方法
+                perms（权限）：例子/admins/user/**=perms[user:add:*],参数可以写多个，多个时必须加上引号，并且参数之间用逗号分割，例如/admins/user/**=perms["user:add:*,user:modify:*"]，当有多个参数时必须每个参数都通过才通过，想当于isPermitedAll()方法。
+                rest：例子/admins/user/**=rest[user],根据请求的方法，相当于/admins/user/**=perms[user:method] ,其中method为post，get，delete等。
+                port：例子/admins/user/**=port[8081],当请求的url的端口不是8081是跳转到schemal://serverName:8081?queryString,其中schmal是协议http或https等，serverName是你访问的host,8081是url配置里port的端口，queryString是你访问的url里的？后面的参数。
+                authcBasic：例如/admins/user/**=authcBasic没有参数表示httpBasic认证
+                ssl:例子/admins/user/**=ssl没有参数，表示安全的url请求，协议为https
+                user:例如/admins/user/**=user没有参数表示必须存在用户，当登入操作时不做检查
+-->
+                <!--zs:seller、buyer-->
+                <!--ls:operator-->
+                <!--/admin/user/test123=roles[seller]  访问admin/user/test123必须是角色(roleCode)为seller
+                /admin/user/test123=anuthc,roles[seller]   访问admin/user/test123必须登录，且角色(roleCode)为seller,才能访问
+                /admin/user/test123=anuthc,roles["seller,buyer"]  访问admin/user/test123必须登录，且角色(roleCode)必须同时为seller和buyer,才能访问
+                /admin/user/**=authc  必须经过登录才能访问-->
+                <!--自定义的roleFilter,角色为 admin"或" 经理 都可以进入-->
+                /sys/provider/providerlist.html=authc,roleFilter["SMBMS_ADMIN,SMBMS_MANAGER"]
+                /sys/**=authc
+                /**=anon<!--没有任何条件进行访问-->
+            </value>
+        </property>
+    </bean>
+
+
+    <!-- 4.提供shiro内部的bean对象的生命周期管理. 保证实现了Shiro内部lifecycle函数的bean执行-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+       <!-- 5.需要提供权限拦截过滤器: -->
+     <bean id="roleFilter" class="com.smbms.shiroFilter.RoleFilter"></bean>
+
+
+    <!--启用shiro注解 -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="true"/>
+    </bean>
+    <bean
+            class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+
+</beans>

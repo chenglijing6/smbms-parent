@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN1"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 无论UserMapper.xml放在哪，mapper中d的namespace：一定要和mapper接口的全限定名一样
+，mapper接口中的方法名一定要与 UserMapper.xml的id一样-->
+<mapper namespace="com.smbms.dao.user.UserMapper">
+    <!--使用Redis缓存作为MyBatis二级缓存-->
+    <cache type="com.smbms.tools.RedisCache"/>
+    <!-- 登录验证 -->
+    <select id="getLoginUser" parameterType="String" resultType="user">
+        select * from smbms_user where isDelete=0 and userCode=#{userCode}
+    </select>
+
+    <!--模糊条件查询列表-->
+    <resultMap type="user" id="userList">
+        <id property="id" column="id"/>
+        <result property="userCode" column="userCode"/>
+        <result property="userName" column="userName"/>
+        <result property="phone" column="phone"/>
+        <result property="creationDate" column="creationDate"/>
+        <result property="birthday" column="birthday"/>
+        <result property="userRole" column="userRole"/>
+        <result property="userRoleName" column="roleName"/>
+    </resultMap>
+    <select id="getUserList" resultMap="userList">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r
+        where u.userRole = r.id
+        <if test="userName != null and userName != '' ">
+            and userName like CONCAT ('%',#{userName},'%')
+        </if>
+        <if test=" userRole > 0">
+            and u.userRole=#{userRole}
+        </if>
+        and u.isDelete=0 limit #{from},#{pageSize}
+    </select>
+    <!--getAllUsers-->
+    <select id="getAllUsers" resultMap="userList">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r
+        where u.userRole = r.id and u.isDelete=0
+    </select>
+
+    <select id="getUserCount" resultType="int">
+        select count(1) from smbms_user where isDelete=0
+        <if test="userName != null and userName != '' ">
+            and userName like CONCAT ('%',#{userName},'%')
+        </if>
+        <if test=" userRole >0 ">
+            and userRole=#{userRole}
+        </if>
+    </select>
+    <!--增加用户-->
+    <insert id="addUser" parameterType="user">
+        insert into smbms_user
+        (userCode,userName,userPassword,userRole,gender,birthday,phone,address,creationDate,createdBy,idPicPath,workPicPath,salt)
+        values(#{userCode},#{userName},#{userPassword},#{userRole},#{gender},#{birthday},#{phone},#{address},#{creationDate},#{createdBy},#{idPicPath},#{workPicPath}
+        ,#{salt})
+    </insert>
+    <!--验证userCode的唯一性，-->
+    <select id="getUserCountByUserCode" parameterType="String" resultType="user">
+        select * from smbms_user where isDelete=0 and userCode=#{userCode}
+    </select>
+    <!--根据id查看用户信息-->
+    <select id="getUserById" parameterType="int" resultMap="userList">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r
+        where u.userRole = r.id and u.isDelete=0 and u.id=#{id}
+    </select>
+
+    <!--修改用户信息-->
+    <update id="modify" parameterType="user">
+        update smbms_user
+        <trim prefix="set" suffixOverrides="," suffix=" where isDelete=0 and id=#{id}  ">
+            <if test=" userName != null and userName.length()>0 ">userName=#{userName},</if>
+            <if test=" gender != null and gender != '' ">gender=#{gender},</if>
+            <if test=" birthday != null  ">birthday=#{birthday},</if>
+            <if test=" phone != null and phone.length()>0 ">phone=#{phone},</if>
+            <if test=" address != null and address.length()>0 ">address=#{address},</if>
+            <if test=" userRole != null and userRole != '' ">userRole=#{userRole},</if>
+            <if test=" modifyBy != null and modifyBy != '' ">modifyBy=#{modifyBy},</if>
+            <if test=" modifyDate != null  ">modifyDate=#{modifyDate},</if>
+        </trim>
+    </update>
+
+    <!--删除用户-->
+    <update id="deleteUserById" parameterType="int">
+        update smbms_user set isDelete=1 where id=#{id}
+    </update>
+
+    <!--修改用户密码-->
+    <update id="updatePwd">
+        update smbms_user set userPassword=#{userPassword} where id=#{id}
+    </update>
+
+</mapper>

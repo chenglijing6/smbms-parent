@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="smbms-dao" />
+        <module name="smbms-pojo" />
+        <module name="smbms-controller" />
+        <module name="smbms-poi" />
+        <module name="smbms-common" />
+        <module name="smbms-service" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="smbms-security" target="1.8" />
+      <module name="smbms-tools" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

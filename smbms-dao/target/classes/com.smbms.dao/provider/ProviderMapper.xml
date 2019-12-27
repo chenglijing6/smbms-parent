@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN1"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 无论UserMapper.xml放在哪，mapper中d的namespace：一定要和mapper接口的全限定名一样
+，mapper接口中的方法名一定要与 UserMapper.xml的id一样-->
+<mapper namespace="com.smbms.dao.provider.ProviderMapper">
+    <!--使用Redis缓存作为MyBatis二级缓存-->
+    <cache type="com.smbms.tools.RedisCache"/>
+    <!--模糊条件查询账单列表-->
+    <!--<resultMap id="providerList" type="provider">
+        <id property="id" column="id"></id>
+        <result property="proCode" column="proCode" ></result>
+        <result property="proName" column="proName" ></result>
+        <result property="proDesc" column="proDesc" ></result>
+        <result property="proContact" column="proContact" ></result>
+        <result property="proPhone" column="proPhone" ></result>
+        <result property="proAddress" column="proAddress" ></result>
+        <result property="proFax" column="proFax" ></result>
+        <result property="createdBy" column="createdBy"/>
+        <result property="creationDate" column="creationDate"/>
+        <result property="modifyBy" column="modifyBy"/>
+        <result property="modifyDate" column="modifyDate"/>
+        <result property="isDelete" column="isDelete"/>
+    </resultMap>-->
+
+    <select id="getProviderList" resultType="provider">
+        select * from smbms_provider where isDelete=0
+    </select>
+    <select id="getProviderListAll" resultType="provider">
+        select * from smbms_provider where isDelete=0
+        <if test="proName != null and proName != '' ">
+            and proName like CONCAT ('%',#{proName},'%')
+        </if>
+        limit #{from},#{pageSize}
+    </select>
+    <select id="getProviderCount" resultType="int">
+        select count(1) from smbms_provider where isDelete=0
+        <if test="proName != null and proName != '' ">
+            and proName like CONCAT ('%',#{proName},'%')
+        </if>
+    </select>
+    <!--根据id 查看供应商信息-->
+    <select id="getProviderById" parameterType="int" resultType="provider">
+        select * from smbms_provider where isDelete =0 and id=#{id}
+    </select>
+    <!--增加供应商信息-->
+    <insert id="addProvider" parameterType="provider">
+        insert into smbms_provider
+        (proCode,proName,proDesc,proContact,proPhone,proFax,proAddress,createdBy,creationDate)
+        values(#{proCode},#{proName},#{proDesc},#{proContact},#{proPhone},#{proFax},#{proAddress},#{createdBy},#{creationDate})
+    </insert>
+    <!--修改供应商信息-->
+    <update id="updateProvider" parameterType="provider">
+        update smbms_provider p
+        <trim prefix="set" suffixOverrides="," suffix="where isDelete=0 and id=#{id}">
+            <if test="proCode != null and proCode != '' ">p.proCode=#{proCode},</if>
+            <if test="proName != null and proName != '' ">p.proName=#{proName},</if>
+            <if test="proDesc != null and proDesc != '' ">p.proDesc=#{proDesc},</if>
+            <if test="proContact != null and proContact != '' ">p.proContact=#{proContact},</if>
+            <if test="proPhone != null and proPhone != '' ">p.proPhone=#{proPhone},</if>
+            <if test="proFax != null and proFax != '' ">p.proFax=#{proFax},</if>
+            <if test="proAddress != null and proAddress != '' ">p.proAddress=#{proAddress},</if>
+            <if test="modifyBy != null and modifyBy != '' ">p.modifyBy=#{modifyBy},</if>
+            <if test="modifyDate != null and modifyDate != '' ">p.modifyDate=#{modifyDate},</if>
+        </trim>
+    </update>
+    <!--删除供应商-->
+    <delete id="deleteprovider" parameterType="int">
+        update smbms_provider set isDelete=1 where id=#{id}
+    </delete>
+
+
+</mapper>

@@ -1,0 +1,4 @@
+com\smbms\dao\bill\BillMapper.class
+com\smbms\dao\role\RoleMapper.class
+com\smbms\dao\provider\ProviderMapper.class
+com\smbms\dao\user\UserMapper.class
