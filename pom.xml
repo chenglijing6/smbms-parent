@@ -39,7 +39,7 @@
 
         <jackson.version>2.4.2</jackson.version>
         <druid.version>1.0.9</druid.version>
-        <httpclient.version>4.3.5</httpclient.version>
+        <httpclient.version>4.3.6</httpclient.version>
         <joda-time.version>2.5</joda-time.version>
 
         <!-- redis 客户端 -->
