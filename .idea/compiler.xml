@@ -6,12 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="smbms-service" />
         <module name="smbms-dao" />
-        <module name="smbms-pojo" />
         <module name="smbms-controller" />
+        <module name="smbms-pojo" />
         <module name="smbms-poi" />
         <module name="smbms-common" />
-        <module name="smbms-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
