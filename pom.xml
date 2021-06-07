@@ -34,7 +34,7 @@
         <spring-data-redis.version>1.6.2.RELEASE</spring-data-redis.version>
         <!-- Log -->
         <slf4j.version>1.7.7</slf4j.version>
-        <logback.version>1.1.2</logback.version>
+        <logback.version>1.2.0</logback.version>
         <logback.ext.spring.version>0.1.2</logback.ext.spring.version>
 
         <jackson.version>2.4.2</jackson.version>
