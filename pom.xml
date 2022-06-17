@@ -60,7 +60,7 @@
         <servlet.api.version>2.5</servlet.api.version>
         <jsp.api.version>2.0</jsp.api.version>
         <jstl.version>1.2</jstl.version>
-        <fastjson.version>1.2.56</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <dbcp.version>1.4</dbcp.version>
         <pagehelper.version>5.0.0</pagehelper.version>
     </properties>
